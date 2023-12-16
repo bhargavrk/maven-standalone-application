@@ -8,7 +8,7 @@ trigger:
 - master
 
 pool:
-  vmImage: ubuntu-latest
+  name: bhargav
 
 steps:
 - task: Maven@3
