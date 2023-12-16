@@ -13,15 +13,6 @@ jobs:
   displayName: 'Build and Push to Docker Hub'
   steps:
 
-  - task: UseJavaVersion@1
-    inputs:
-      versionSpec: '$(javaVersion)'
-      addToPath: true
-
-  - script: |
-      echo '##vso[task.prependpath]/usr/lib/jvm/zulu-8-amd64/bin/'
-    displayName: 'Add Java to PATH'
-
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
