@@ -1,25 +1,16 @@
-# Maven
-
-# Build your Java project and run tests with Apache Maven.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
-
 trigger:
 - master
 
 pool:
   name: bhargav
 
-steps:
-# Java tool installer v0
-# Acquire a specific version of Java from a user-supplied Azure blob or the tool cache and sets JAVA_HOME.
 variables:
   # Define the JDK version
   javaVersion: '8'
 
 jobs:
-- job: InstallJDK
-  displayName: 'Install JDK 1.8'
+- job: BuildAndPush
+  displayName: 'Build and Push to Docker Hub'
   steps:
 
   - task: UseJavaVersion@1
@@ -31,21 +22,23 @@ jobs:
       echo '##vso[task.prependpath]/usr/lib/jvm/zulu-8-amd64/bin/'
     displayName: 'Add Java to PATH'
 
-# Add additional steps as needed for your pipeline.
+  - task: Maven@3
+    inputs:
+      mavenPomFile: 'pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.8'
+      jdkArchitectureOption: 'x64'
+      goals: 'clean package'
 
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
-- task: Docker@2
-  inputs:
-    containerRegistry: 'docker'
-    repository: 'maven-web-application'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'Docker Hub Connection'
+      repository: '<your-dockerhub-username>/<your-dockerhub-repository>'
+      command: 'buildAndPush'
+      Dockerfile: '<path-to-dockerfile>'
+      tags: |
+        $(Build.SourceBranchName)-$(Build.BuildId)
+        latest
+
+# Add additional steps as needed for deployment or other tasks.
